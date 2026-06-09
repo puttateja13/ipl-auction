@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPL 2026 Auction — Data Analysis Portfolio</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --navy:   #0a0e1a;
+    --pitch:  #0d1f12;
+    --gold:   #f0a500;
+    --gold2:  #ffd460;
+    --teal:   #00c9a7;
+    --red:    #e63946;
+    --mid:    #1a2235;
+    --card:   #111827;
+    --border: #1e2d45;
+    --text:   #e2e8f0;
+    --muted:  #64748b;
+    --white:  #ffffff;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--navy);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; width: 100%; z-index: 100;
+    background: rgba(10,14,26,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px;
+  }
+  .nav-logo { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1.3rem; color: var(--gold); letter-spacing: 2px; }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.82rem; letter-spacing: 1px; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--gold); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 6rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 60% 40%, #0d2a14 0%, var(--navy) 60%);
+  }
+  .hero-pitch-lines {
+    position: absolute; inset: 0; opacity: 0.04;
+    background: repeating-linear-gradient(90deg, #fff 0, #fff 1px, transparent 1px, transparent 60px),
+                repeating-linear-gradient(0deg, #fff 0, #fff 1px, transparent 1px, transparent 60px);
+    pointer-events: none;
+  }
+  .hero-circle {
+    position: absolute; width: 520px; height: 520px; border-radius: 50%;
+    border: 1px solid rgba(240,165,0,0.08);
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    animation: pulse-ring 4s ease-in-out infinite;
+  }
+  .hero-circle::before {
+    content: ''; position: absolute; inset: 40px; border-radius: 50%;
+    border: 1px solid rgba(0,201,167,0.06);
+  }
+  @keyframes pulse-ring { 0%,100%{opacity:0.6;transform:translate(-50%,-50%) scale(1)} 50%{opacity:1;transform:translate(-50%,-50%) scale(1.04)} }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--teal); margin-bottom: 1.2rem;
+  }
+  .hero h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    text-align: center;
+    color: var(--white);
+    text-shadow: 0 0 60px rgba(240,165,0,0.15);
+  }
+  .hero h1 span { color: var(--gold); }
+  .hero-sub {
+    margin-top: 1.4rem;
+    font-size: 1.05rem; color: var(--muted);
+    text-align: center; max-width: 560px;
+  }
+  .hero-badges {
+    display: flex; flex-wrap: wrap; gap: 0.6rem;
+    margin-top: 2.2rem; justify-content: center;
+  }
+  .badge {
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; font-weight: 500; letter-spacing: 1px;
+    border: 1px solid;
+  }
+  .badge-green { border-color: var(--teal); color: var(--teal); background: rgba(0,201,167,0.07); }
+  .badge-gold  { border-color: var(--gold); color: var(--gold); background: rgba(240,165,0,0.08); }
+  .badge-red   { border-color: var(--red);  color: var(--red);  background: rgba(230,57,70,0.08); }
+
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 0; margin-top: 3.5rem; width: 100%; max-width: 700px;
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+  }
+  .hero-stat {
+    padding: 1.4rem 1rem; text-align: center;
+    border-right: 1px solid var(--border);
+    background: rgba(17,24,39,0.7);
+    backdrop-filter: blur(8px);
+  }
+  .hero-stat:last-child { border-right: none; }
+  .hero-stat-value {
+    font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 700;
+    color: var(--gold); line-height: 1;
+  }
+  .hero-stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.3rem; }
+
+  .scroll-hint { margin-top: 3rem; color: var(--muted); font-size: 0.78rem; letter-spacing: 2px; animation: bounce 2s infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+
+  /* ── SECTIONS ── */
+  .section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
+  .section-header { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 2.5rem; }
+  .section-num { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--teal); letter-spacing: 2px; }
+  .section-title { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 700; color: var(--white); }
+  .section-divider { flex: 1; height: 1px; background: var(--border); }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.6rem; transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: rgba(240,165,0,0.3); transform: translateY(-2px); }
+  .card-title { font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--gold); margin-bottom: 0.8rem; }
+
+  /* ── PROJECT STRUCTURE ── */
+  .folder-tree {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+    line-height: 2; color: var(--text);
+  }
+  .folder-tree .dir  { color: var(--gold2); }
+  .folder-tree .file { color: var(--teal); }
+  .folder-tree .desc { color: var(--muted); font-size: 0.75rem; }
+
+  /* ── PIPELINE ── */
+  .pipeline {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0; position: relative;
+  }
+  .pipeline-step {
+    padding: 1.4rem 1.2rem; background: var(--card);
+    border: 1px solid var(--border); position: relative;
+    text-align: center;
+  }
+  .pipeline-step:not(:last-child)::after {
+    content: '→';
+    position: absolute; right: -14px; top: 50%; transform: translateY(-50%);
+    color: var(--gold); font-size: 1.2rem; z-index: 2;
+  }
+  .pipeline-step:first-child { border-radius: 10px 0 0 10px; }
+  .pipeline-step:last-child  { border-radius: 0 10px 10px 0; }
+  .pipeline-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+  .pipeline-label { font-family: 'Rajdhani', sans-serif; font-size: 0.95rem; font-weight: 600; color: var(--white); }
+  .pipeline-sub { font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: #070c16; border: 1px solid var(--border); border-radius: 10px;
+    overflow: hidden; margin-top: 1.2rem;
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.6rem 1rem; border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+  }
+  .code-dots { display: flex; gap: 6px; }
+  .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .code-lang { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); }
+  .code-body { padding: 1.4rem 1.4rem; overflow-x: auto; }
+  .code-body pre { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.8; white-space: pre; }
+  .kw  { color: #c792ea; }
+  .fn  { color: #82aaff; }
+  .str { color: #c3e88d; }
+  .cm  { color: #546e7a; font-style: italic; }
+  .num { color: #f78c6c; }
+  .var { color: #eeffff; }
+  .op  { color: var(--gold); }
+
+  /* ── BAR CHARTS ── */
+  .bar-chart { display: flex; flex-direction: column; gap: 0.7rem; margin-top: 1rem; }
+  .bar-row { display: flex; align-items: center; gap: 0.8rem; }
+  .bar-label { font-size: 0.78rem; color: var(--text); width: 200px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track { flex: 1; height: 20px; background: rgba(255,255,255,0.04); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; position: relative; transition: width 1.2s cubic-bezier(0.16,1,0.3,1); }
+  .bar-fill::after { content: attr(data-val); position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: rgba(255,255,255,0.9); font-weight: 500; }
+  .bar-gold   { background: linear-gradient(90deg, var(--gold), var(--gold2)); }
+  .bar-teal   { background: linear-gradient(90deg, #00a87e, var(--teal)); }
+  .bar-purple { background: linear-gradient(90deg, #6b46c1, #9f7aea); }
+  .bar-red    { background: linear-gradient(90deg, #c0392b, var(--red)); }
+
+  /* ── INSIGHTS GRID ── */
+  .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+  .insight-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.4rem;
+    border-left: 3px solid var(--teal);
+    transition: transform 0.2s;
+  }
+  .insight-card:hover { transform: translateY(-2px); }
+  .insight-card.gold-accent { border-left-color: var(--gold); }
+  .insight-card.red-accent  { border-left-color: var(--red); }
+  .insight-card.teal-accent { border-left-color: var(--teal); }
+  .insight-icon { font-size: 1.5rem; margin-bottom: 0.6rem; }
+  .insight-title { font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700; color: var(--white); }
+  .insight-body { font-size: 0.82rem; color: var(--muted); margin-top: 0.3rem; line-height: 1.5; }
+  .insight-val { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; color: var(--gold); font-weight: 500; }
+
+  /* ── TABLE ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .data-table th {
+    background: rgba(240,165,0,0.08);
+    padding: 0.7rem 1rem; text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--gold); border-bottom: 1px solid var(--border);
+  }
+  .data-table td { padding: 0.65rem 1rem; border-bottom: 1px solid rgba(30,45,69,0.5); color: var(--text); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .team-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+
+  .pill {
+    display: inline-block; padding: 0.15rem 0.55rem;
+    border-radius: 99px; font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pill-bat  { background: rgba(0,201,167,0.12); color: var(--teal); }
+  .pill-bowl { background: rgba(240,165,0,0.12); color: var(--gold); }
+  .pill-ar   { background: rgba(159,122,234,0.12); color: #9f7aea; }
+  .pill-wk   { background: rgba(230,57,70,0.12); color: var(--red); }
+
+  /* ── SKILLS ── */
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.8rem; }
+  .skill-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.2rem; text-align: center; transition: all 0.2s;
+  }
+  .skill-card:hover { border-color: var(--teal); }
+  .skill-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+  .skill-name { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--teal); }
+  .skill-desc { font-size: 0.7rem; color: var(--muted); margin-top: 0.25rem; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2.5rem; text-align: center;
+    color: var(--muted); font-size: 0.78rem;
+  }
+  footer strong { color: var(--gold); }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 0; margin-bottom: 1.2rem; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; width: fit-content; }
+  .tab {
+    padding: 0.5rem 1.1rem; font-size: 0.78rem; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px;
+    color: var(--muted); background: transparent; border: none;
+    transition: all 0.15s;
+  }
+  .tab.active { background: var(--gold); color: var(--navy); font-weight: 600; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── FULL WIDTH BREAK ── */
+  .full-width-section {
+    background: linear-gradient(180deg, transparent, rgba(13,31,18,0.4), transparent);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    padding: 4rem 2rem;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  @media(max-width:700px){ .two-col{ grid-template-columns: 1fr; } .hero-stats{ grid-template-columns: 2fr 2fr; } .pipeline{ flex-direction:column; } }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">IPL 2026 // DATA</div>
+  <div class="nav-links">
+    <a href="#overview">Overview</a>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#eda">EDA</a>
+    <a href="#teams">Teams</a>
+    <a href="#insights">Insights</a>
+    <a href="#code">Code</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-pitch-lines"></div>
+  <div class="hero-circle"></div>
+  <div class="eyebrow">// Data Analysis Project</div>
+  <h1>IPL <span>2026</span><br>Mega Auction</h1>
+  <p class="hero-sub">End-to-end data analysis of the IPL 2026 Mega Auction — from raw dataset generation to insights using Python &amp; Pandas.</p>
+  <div class="hero-badges">
+    <span class="badge badge-green">Python 3.12</span>
+    <span class="badge badge-gold">Pandas</span>
+    <span class="badge badge-gold">NumPy</span>
+    <span class="badge badge-green">244 Players</span>
+    <span class="badge badge-red">10 Teams</span>
+    <span class="badge badge-green">₹644 Cr Spent</span>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-value">244</div>
+      <div class="hero-stat-label">Players</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-value">175</div>
+      <div class="hero-stat-label">Sold</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-value">₹644Cr</div>
+      <div class="hero-stat-label">Total Spent</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-value">₹25Cr</div>
+      <div class="hero-stat-label">Top Bid</div>
+    </div>
+  </div>
+  <div class="scroll-hint">▼ &nbsp; SCROLL TO EXPLORE</div>
+</section>
+
+<!-- OVERVIEW -->
+<div class="section" id="overview">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">Project Overview</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">📁 Project Structure</div>
+      <div class="folder-tree">
+        <div><span class="dir">ipl_2026_auction/</span></div>
+        <div>&nbsp; ├── <span class="dir">data/</span></div>
+        <div>&nbsp; │&nbsp;&nbsp; ├── <span class="file">generate_dataset.py</span> <span class="desc">← synthetic data gen</span></div>
+        <div>&nbsp; │&nbsp;&nbsp; └── <span class="file">ipl_2026_auction.csv</span> <span class="desc">← raw dataset</span></div>
+        <div>&nbsp; ├── <span class="dir">scripts/</span></div>
+        <div>&nbsp; │&nbsp;&nbsp; └── <span class="file">analysis.py</span> <span class="desc">← full A–Z analysis</span></div>
+        <div>&nbsp; ├── <span class="dir">outputs/</span></div>
+        <div>&nbsp; │&nbsp;&nbsp; ├── <span class="file">ipl_2026_auction_enriched.csv</span></div>
+        <div>&nbsp; │&nbsp;&nbsp; └── <span class="file">team_spending_summary.csv</span></div>
+        <div>&nbsp; └── <span class="file">portfolio.html</span> <span class="desc">← this file</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-title">🎯 Objectives</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:0.6rem">
+          <li style="font-size:0.85rem;color:var(--text)">✦ Generate a realistic IPL 2026 auction dataset (244 players)</li>
+          <li style="font-size:0.85rem;color:var(--text)">✦ Clean, validate &amp; engineer new features with Pandas</li>
+          <li style="font-size:0.85rem;color:var(--text)">✦ Analyze team spending patterns &amp; budget allocation</li>
+          <li style="font-size:0.85rem;color:var(--text)">✦ Identify hidden gems and overpriced purchases</li>
+          <li style="font-size:0.85rem;color:var(--text)">✦ Uncover stat-to-price correlations across roles</li>
+        </ul>
+      </div>
+      <div class="skills-grid">
+        <div class="skill-card"><div class="skill-icon">🐍</div><div class="skill-name">Python</div><div class="skill-desc">Core language</div></div>
+        <div class="skill-card"><div class="skill-icon">🐼</div><div class="skill-name">Pandas</div><div class="skill-desc">Data wrangling</div></div>
+        <div class="skill-card"><div class="skill-icon">🔢</div><div class="skill-name">NumPy</div><div class="skill-desc">Numerics</div></div>
+        <div class="skill-card"><div class="skill-icon">📊</div><div class="skill-name">EDA</div><div class="skill-desc">Exploration</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PIPELINE -->
+<div class="full-width-section" id="pipeline">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Data Pipeline</h2>
+      <div class="section-divider"></div>
+    </div>
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="pipeline-icon">🎲</div>
+        <div class="pipeline-label">Data Generation</div>
+        <div class="pipeline-sub">244 players, 18 features, realistic distributions</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-icon">🔍</div>
+        <div class="pipeline-label">Inspection</div>
+        <div class="pipeline-sub">dtypes, null counts, descriptive stats</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-icon">🧹</div>
+        <div class="pipeline-label">Cleaning</div>
+        <div class="pipeline-sub">fillna, clip outliers, type casting</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-icon">⚙️</div>
+        <div class="pipeline-label">Feature Eng.</div>
+        <div class="pipeline-sub">Price_Multiple, Experience_Band, Age_Group</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-icon">📈</div>
+        <div class="pipeline-label">EDA &amp; Insights</div>
+        <div class="pipeline-sub">groupby, corr, crosstab, segmentation</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDA -->
+<div class="section" id="eda">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">Exploratory Data Analysis</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="two-col" style="margin-bottom:1.5rem">
+    <!-- Sold Rate by Role -->
+    <div class="card">
+      <div class="card-title">🏏 Sold Rate by Role</div>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <span class="bar-label">Bowler</span>
+          <div class="bar-track"><div class="bar-fill bar-teal" style="width:77.5%" data-val="77.5%"></div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">All-Rounder</span>
+          <div class="bar-track"><div class="bar-fill bar-gold" style="width:71.6%" data-val="71.6%"></div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">Batsman</span>
+          <div class="bar-track"><div class="bar-fill bar-purple" style="width:70.1%" data-val="70.1%"></div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">Wicket-Keeper</span>
+          <div class="bar-track"><div class="bar-fill bar-red" style="width:59.1%" data-val="59.1%"></div></div>
+        </div>
+      </div>
+    </div>
+    <!-- Price Multiple -->
+    <div class="card">
+      <div class="card-title">💰 Avg Price Multiple (sold at X× base)</div>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <span class="bar-label">Bowler</span>
+          <div class="bar-track"><div class="bar-fill bar-gold" style="width:100%" data-val="5.30×"></div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">Batsman</span>
+          <div class="bar-track"><div class="bar-fill bar-teal" style="width:86.6%" data-val="4.59×"></div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">All-Rounder</span>
+          <div class="bar-track"><div class="bar-fill bar-purple" style="width:85.3%" data-val="4.52×"></div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">Wicket-Keeper</span>
+          <div class="bar-track"><div class="bar-fill bar-red" style="width:82.6%" data-val="4.38×"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nationality -->
+  <div class="card">
+    <div class="card-title">🌍 Nationality Breakdown (Sold Players)</div>
+    <div class="bar-chart" style="margin-top:0.5rem">
+      <div class="bar-row"><span class="bar-label">India</span><div class="bar-track"><div class="bar-fill bar-gold" style="width:100%" data-val="107"></div></div></div>
+      <div class="bar-row"><span class="bar-label">England</span><div class="bar-track"><div class="bar-fill bar-teal" style="width:16.8%" data-val="18"></div></div></div>
+      <div class="bar-row"><span class="bar-label">Australia</span><div class="bar-track"><div class="bar-fill bar-teal" style="width:14%" data-val="15"></div></div></div>
+      <div class="bar-row"><span class="bar-label">South Africa</span><div class="bar-track"><div class="bar-fill bar-purple" style="width:9.3%" data-val="10"></div></div></div>
+      <div class="bar-row"><span class="bar-label">New Zealand</span><div class="bar-track"><div class="bar-fill bar-purple" style="width:9.3%" data-val="10"></div></div></div>
+      <div class="bar-row"><span class="bar-label">Afghanistan</span><div class="bar-track"><div class="bar-fill bar-red" style="width:3.7%" data-val="4"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TEAMS -->
+<div class="full-width-section" id="teams">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Team-wise Spending</h2>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="card-title">💸 Total Spend by Team (₹ Crore)</div>
+      <div class="bar-chart">
+        <div class="bar-row"><span class="bar-label" title="Punjab Kings">Punjab Kings</span><div class="bar-track"><div class="bar-fill bar-red" style="width:100%" data-val="₹91.7 Cr"></div></div></div>
+        <div class="bar-row"><span class="bar-label" title="Delhi Capitals">Delhi Capitals</span><div class="bar-track"><div class="bar-fill bar-red" style="width:98.3%" data-val="₹90.1 Cr"></div></div></div>
+        <div class="bar-row"><span class="bar-label" title="Royal Challengers">RCB</span><div class="bar-track"><div class="bar-fill bar-gold" style="width:84.3%" data-val="₹77.3 Cr"></div></div></div>
+        <div class="bar-row"><span class="bar-label" title="Lucknow Super Giants">Lucknow SG</span><div class="bar-track"><div class="bar-fill bar-gold" style="width:76.4%" data-val="₹70.0 Cr"></div></div></div>
+        <div class="bar-row"><span class="bar-label" title="Rajasthan Royals">Rajasthan Royals</span><div class="bar-track"><div class="bar-fill bar-teal" style="width:75.2%" data-val="₹69.0 Cr"></div></div></div>
+        <div class="bar-row"><span class="bar-label" title="Chennai Super Kings">Chennai SK</span><div class="bar-track"><div class="bar-fill bar-teal" style="width:69.6%" data-val="₹63.8 Cr"></div></div></div>
+        <div class="bar-row"><span class="bar-label" title="Gujarat Titans">Gujarat Titans</span><div class="bar-track"><div class="bar-fill bar-teal" style="width:67.9%" data-val="₹62.2 Cr"></div></div></div>
+        <div class="bar-row"><span class="bar-label" title="Mumbai Indians">Mumbai Indians</span><div class="bar-track"><div class="bar-fill bar-purple" style="width:60.5%" data-val="₹55.5 Cr"></div></div></div>
+        <div class="bar-row"><span class="bar-label" title="Sunrisers Hyderabad">Sunrisers HYD</span><div class="bar-track"><div class="bar-fill bar-purple" style="width:36%" data-val="₹33.0 Cr"></div></div></div>
+        <div class="bar-row"><span class="bar-label" title="Kolkata Knight Riders">Kolkata KR</span><div class="bar-track"><div class="bar-fill bar-purple" style="width:35%" data-val="₹32.1 Cr"></div></div></div>
+      </div>
+    </div>
+
+    <!-- Top 10 players table -->
+    <div class="card">
+      <div class="card-title">🏆 Top 10 Most Expensive Players</div>
+      <div style="overflow-x:auto;margin-top:0.5rem">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Player</th><th>Nationality</th><th>Role</th><th>Bat Avg</th><th>SR</th><th>Wickets</th><th>Price</th><th>Team</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td><strong>Washington Badoni</strong></td><td>🇮🇳 India</td><td><span class="pill pill-ar">All-Rounder</span></td><td>22.5</td><td>142</td><td>41</td><td style="color:var(--gold);font-weight:600">₹25.0 Cr</td><td>Mumbai Indians</td></tr>
+            <tr><td>2</td><td><strong>KL Jurel</strong></td><td>🇮🇳 India</td><td><span class="pill pill-ar">All-Rounder</span></td><td>34.4</td><td>125</td><td>76</td><td style="color:var(--gold);font-weight:600">₹25.0 Cr</td><td>Punjab Kings</td></tr>
+            <tr><td>3</td><td><strong>Kagiso Rabada</strong></td><td>🇦🇫 Afghanistan</td><td><span class="pill pill-bat">Batsman</span></td><td>27.2</td><td>127</td><td>11</td><td style="color:var(--gold2);">₹23.3 Cr</td><td>RCB</td></tr>
+            <tr><td>4</td><td><strong>Yashasvi Rasheed</strong></td><td>🇮🇳 India</td><td><span class="pill pill-wk">WK-Batsman</span></td><td>22.8</td><td>118</td><td>7</td><td style="color:var(--gold2);">₹22.9 Cr</td><td>Delhi Capitals</td></tr>
+            <tr><td>5</td><td><strong>Ayush Jaiswal</strong></td><td>🇮🇳 India</td><td><span class="pill pill-bowl">Bowler</span></td><td>25.8</td><td>98</td><td>106</td><td style="color:var(--text);">₹19.1 Cr</td><td>Delhi Capitals</td></tr>
+            <tr><td>6</td><td><strong>Trent Boult</strong></td><td>🇳🇿 New Zealand</td><td><span class="pill pill-bowl">Bowler</span></td><td>13.8</td><td>92</td><td>69</td><td style="color:var(--text);">₹19.0 Cr</td><td>Rajasthan Royals</td></tr>
+            <tr><td>7</td><td><strong>Ben Stokes</strong></td><td>🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</td><td><span class="pill pill-bat">Batsman</span></td><td>33.3</td><td>102</td><td>11</td><td style="color:var(--text);">₹18.0 Cr</td><td>CSK</td></tr>
+            <tr><td>8</td><td><strong>Gerald Coetzee</strong></td><td>🇦🇺 Australia</td><td><span class="pill pill-bowl">Bowler</span></td><td>9.8</td><td>102</td><td>98</td><td style="color:var(--text);">₹17.8 Cr</td><td>Gujarat Titans</td></tr>
+            <tr><td>9</td><td><strong>Kane Williamson</strong></td><td>🇦🇺 Australia</td><td><span class="pill pill-bat">Batsman</span></td><td>38.5</td><td>139</td><td>6</td><td style="color:var(--text);">₹11.8 Cr</td><td>Lucknow SG</td></tr>
+            <tr><td>10</td><td><strong>Jason Holder</strong></td><td>🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</td><td><span class="pill pill-bat">Batsman</span></td><td>29.0</td><td>145</td><td>15</td><td style="color:var(--text);">₹11.5 Cr</td><td>CSK</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INSIGHTS -->
+<div class="section" id="insights">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">Key Insights</h2>
+    <div class="section-divider"></div>
+  </div>
+  <div class="insights-grid">
+    <div class="insight-card gold-accent">
+      <div class="insight-icon">💰</div>
+      <div class="insight-title">Total Auction Pool</div>
+      <div class="insight-val">₹644.65 Cr</div>
+      <div class="insight-body">175 out of 244 players sold (71.7%). Avg price ₹3.68 Cr, median ₹2.15 Cr — indicating a right-skewed distribution driven by marquee players.</div>
+    </div>
+    <div class="insight-card red-accent">
+      <div class="insight-icon">🏏</div>
+      <div class="insight-title">Biggest Spender</div>
+      <div class="insight-val">Punjab Kings</div>
+      <div class="insight-body">Bought 23 players for ₹91.7 Cr — the most aggressive squad-building strategy, prioritising depth over premium stars.</div>
+    </div>
+    <div class="insight-card teal-accent">
+      <div class="insight-icon">🪙</div>
+      <div class="insight-title">Most Frugal</div>
+      <div class="insight-val">Kolkata KR</div>
+      <div class="insight-body">Spent only ₹32.1 Cr on 12 players. KKR bet on IPL experience &amp; youth, reflecting a analytics-driven draft philosophy.</div>
+    </div>
+    <div class="insight-card gold-accent">
+      <div class="insight-icon">⚡</div>
+      <div class="insight-title">Bowlers In Demand</div>
+      <div class="insight-val">5.30× base price</div>
+      <div class="insight-body">Bowlers commanded the highest average price multiple (5.3×), signalling a market correction as T20 batting depth increased across leagues.</div>
+    </div>
+    <div class="insight-card teal-accent">
+      <div class="insight-icon">📈</div>
+      <div class="insight-title">IPL Experience = Price</div>
+      <div class="insight-val">r = +0.164</div>
+      <div class="insight-body">IPL experience was the strongest predictor of final bid price — teams paid a premium for proven performers over raw T20 stats.</div>
+    </div>
+    <div class="insight-card red-accent">
+      <div class="insight-icon">💎</div>
+      <div class="insight-title">Best Value Pick</div>
+      <div class="insight-val">₹0.43 Cr</div>
+      <div class="insight-body">A Kane Williamson-archetype pick at just ₹0.43 Cr base — batting avg 54.3 and SR 152.8 — the biggest hidden gem of the auction.</div>
+    </div>
+  </div>
+
+  <!-- Correlation section -->
+  <div class="card" style="margin-top:1.5rem">
+    <div class="card-title">🔗 Correlation: Stats vs Final Bid Price</div>
+    <div class="bar-chart" style="max-width:600px">
+      <div class="bar-row"><span class="bar-label">IPL Experience (yrs)</span><div class="bar-track"><div class="bar-fill bar-teal" style="width:50%" data-val="+0.164"></div></div></div>
+      <div class="bar-row"><span class="bar-label">T20 Wickets</span><div class="bar-track"><div class="bar-fill bar-teal" style="width:26.5%" data-val="+0.087"></div></div></div>
+      <div class="bar-row"><span class="bar-label">Age</span><div class="bar-track"><div class="bar-fill bar-teal" style="width:26.5%" data-val="+0.087"></div></div></div>
+      <div class="bar-row"><span class="bar-label">T20 Economy (neg)</span><div class="bar-track"><div class="bar-fill bar-red" style="width:36.6%" data-val="-0.120"></div></div></div>
+      <div class="bar-row"><span class="bar-label">Strike Rate (neg)</span><div class="bar-track"><div class="bar-fill bar-red" style="width:21.3%" data-val="-0.070"></div></div></div>
+    </div>
+    <p style="font-size:0.78rem;color:var(--muted);margin-top:1rem">Note: Negative correlations on economy/SR suggest teams prefer specialists — a bowler with tight economy gets premium; batsmen with purely high SR but no IPL pedigree are undervalued.</p>
+  </div>
+</div>
+
+<!-- CODE -->
+<div class="full-width-section" id="code">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2 class="section-title">Code Walkthrough</h2>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'tab-load')">Data Loading</button>
+      <button class="tab" onclick="switchTab(this,'tab-clean')">Cleaning</button>
+      <button class="tab" onclick="switchTab(this,'tab-eda')">EDA</button>
+      <button class="tab" onclick="switchTab(this,'tab-insights')">Insights</button>
+    </div>
+
+    <div id="tab-load" class="tab-content active">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot" style="background:#ff5f57"></div><div class="code-dot" style="background:#febc2e"></div><div class="code-dot" style="background:#28c840"></div></div>
+          <span class="code-lang">Python / Pandas</span>
+        </div>
+        <div class="code-body"><pre><span class="kw">import</span> <span class="var">pandas</span> <span class="kw">as</span> <span class="var">pd</span>
+<span class="kw">import</span> <span class="var">numpy</span> <span class="kw">as</span> <span class="var">np</span>
+
+<span class="cm"># Load the auction dataset</span>
+<span class="var">df</span> <span class="op">=</span> <span class="var">pd</span>.<span class="fn">read_csv</span>(<span class="str">"data/ipl_2026_auction.csv"</span>)
+
+<span class="cm"># Quick shape &amp; column inspection</span>
+<span class="fn">print</span>(<span class="var">df</span>.shape)       <span class="cm"># (244, 18)</span>
+<span class="fn">print</span>(<span class="var">df</span>.dtypes)
+
+<span class="cm"># Null analysis</span>
+<span class="var">null_report</span> <span class="op">=</span> <span class="var">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="str">"null_count"</span>: <span class="var">df</span>.<span class="fn">isnull</span>().<span class="fn">sum</span>(),
+    <span class="str">"null_%"</span>: (<span class="var">df</span>.<span class="fn">isnull</span>().<span class="fn">mean</span>() <span class="op">*</span> <span class="num">100</span>).<span class="fn">round</span>(<span class="num">2</span>)
+})
+<span class="fn">print</span>(<span class="var">null_report</span>[<span class="var">null_report</span>[<span class="str">"null_count"</span>] <span class="op">&gt;</span> <span class="num">0</span>])</pre></div>
+      </div>
+    </div>
+
+    <div id="tab-clean" class="tab-content">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot" style="background:#ff5f57"></div><div class="code-dot" style="background:#febc2e"></div><div class="code-dot" style="background:#28c840"></div></div>
+          <span class="code-lang">Python / Pandas — Cleaning &amp; Feature Engineering</span>
+        </div>
+        <div class="code-body"><pre><span class="cm"># Fill nulls for unsold players (Sold_Price_Cr = NaN → 0)</span>
+<span class="var">df</span>[<span class="str">"Sold_Price_Cr"</span>] <span class="op">=</span> <span class="var">df</span>[<span class="str">"Sold_Price_Cr"</span>].<span class="fn">fillna</span>(<span class="num">0</span>)
+
+<span class="cm"># Clip statistical outliers to realistic T20 ranges</span>
+<span class="var">df</span>[<span class="str">"T20_Strike_Rate"</span>] <span class="op">=</span> <span class="var">df</span>[<span class="str">"T20_Strike_Rate"</span>].<span class="fn">clip</span>(<span class="num">70</span>, <span class="num">220</span>)
+<span class="var">df</span>[<span class="str">"T20_Economy"</span>]     <span class="op">=</span> <span class="var">df</span>[<span class="str">"T20_Economy"</span>].<span class="fn">clip</span>(<span class="num">4</span>, <span class="num">16</span>)
+
+<span class="cm"># Feature Engineering</span>
+<span class="var">df</span>[<span class="str">"Price_Multiple"</span>] <span class="op">=</span> (
+    <span class="var">df</span>[<span class="str">"Sold_Price_Cr"</span>] <span class="op">/</span> <span class="var">df</span>[<span class="str">"Base_Price_Cr"</span>]
+).<span class="fn">round</span>(<span class="num">2</span>)
+
+<span class="var">df</span>[<span class="str">"Experience_Band"</span>] <span class="op">=</span> <span class="var">pd</span>.<span class="fn">cut</span>(
+    <span class="var">df</span>[<span class="str">"IPL_Experience_Years"</span>],
+    bins<span class="op">=</span>[<span class="op">-</span><span class="num">1</span>, <span class="num">0</span>, <span class="num">2</span>, <span class="num">5</span>, <span class="num">10</span>, <span class="num">25</span>],
+    labels<span class="op">=</span>[<span class="str">"Debutant"</span>, <span class="str">"Emerging"</span>, <span class="str">"Established"</span>, <span class="str">"Veteran"</span>, <span class="str">"Legend"</span>]
+)</pre></div>
+      </div>
+    </div>
+
+    <div id="tab-eda" class="tab-content">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot" style="background:#ff5f57"></div><div class="code-dot" style="background:#febc2e"></div><div class="code-dot" style="background:#28c840"></div></div>
+          <span class="code-lang">Python / Pandas — EDA</span>
+        </div>
+        <div class="code-body"><pre><span class="var">sold_df</span> <span class="op">=</span> <span class="var">df</span>[<span class="var">df</span>[<span class="str">"Sold"</span>] <span class="op">==</span> <span class="kw">True</span>].<span class="fn">copy</span>()
+
+<span class="cm"># Sold rate per role</span>
+<span class="var">role_sold</span> <span class="op">=</span> <span class="var">df</span>.<span class="fn">groupby</span>(<span class="str">"Role"</span>)[<span class="str">"Sold"</span>].<span class="fn">agg</span>(
+    sold<span class="op">=</span><span class="str">"sum"</span>, total<span class="op">=</span><span class="str">"count"</span>, rate<span class="op">=</span><span class="str">"mean"</span>
+)
+
+<span class="cm"># Team-wise spending breakdown</span>
+<span class="var">team_spend</span> <span class="op">=</span> (
+    <span class="var">sold_df</span>.<span class="fn">groupby</span>(<span class="str">"Winning_Team"</span>)
+    .<span class="fn">agg</span>(
+        Players<span class="op">=</span>(<span class="str">"Player_Name"</span>, <span class="str">"count"</span>),
+        Total_Cr<span class="op">=</span>(<span class="str">"Sold_Price_Cr"</span>, <span class="str">"sum"</span>),
+        Max_Bid<span class="op">=</span>(<span class="str">"Sold_Price_Cr"</span>, <span class="str">"max"</span>),
+    )
+    .<span class="fn">sort_values</span>(<span class="str">"Total_Cr"</span>, ascending<span class="op">=</span><span class="kw">False</span>)
+)
+
+<span class="cm"># Correlation with price</span>
+<span class="var">corr</span> <span class="op">=</span> <span class="var">sold_df</span>[[
+    <span class="str">"Sold_Price_Cr"</span>, <span class="str">"T20_Batting_Avg"</span>, <span class="str">"T20_Strike_Rate"</span>,
+    <span class="str">"T20_Wickets"</span>, <span class="str">"IPL_Experience_Years"</span>
+]].<span class="fn">corr</span>()[<span class="str">"Sold_Price_Cr"</span>]</pre></div>
+      </div>
+    </div>
+
+    <div id="tab-insights" class="tab-content">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot" style="background:#ff5f57"></div><div class="code-dot" style="background:#febc2e"></div><div class="code-dot" style="background:#28c840"></div></div>
+          <span class="code-lang">Python / Pandas — Finding Hidden Gems</span>
+        </div>
+        <div class="code-body"><pre><span class="cm"># Composite gem score: high performance, low price</span>
+<span class="var">sold_df</span>[<span class="str">"Gem_Score"</span>] <span class="op">=</span> (
+    (<span class="var">sold_df</span>[<span class="str">"T20_Batting_Avg"</span>]  <span class="op">/</span> <span class="var">sold_df</span>[<span class="str">"T20_Batting_Avg"</span>].<span class="fn">max</span>()) <span class="op">*</span> <span class="num">0.3</span>
+  <span class="op">+</span> (<span class="var">sold_df</span>[<span class="str">"T20_Strike_Rate"</span>] <span class="op">/</span> <span class="var">sold_df</span>[<span class="str">"T20_Strike_Rate"</span>].<span class="fn">max</span>()) <span class="op">*</span> <span class="num">0.3</span>
+  <span class="op">+</span> (<span class="var">sold_df</span>[<span class="str">"T20_Wickets"</span>]     <span class="op">/</span> <span class="var">sold_df</span>[<span class="str">"T20_Wickets"</span>].<span class="fn">max</span>())     <span class="op">*</span> <span class="num">0.2</span>
+  <span class="op">-</span> (<span class="var">sold_df</span>[<span class="str">"Sold_Price_Cr"</span>]   <span class="op">/</span> <span class="var">sold_df</span>[<span class="str">"Sold_Price_Cr"</span>].<span class="fn">max</span>())   <span class="op">*</span> <span class="num">0.2</span>
+)
+
+<span class="var">hidden_gems</span> <span class="op">=</span> <span class="var">sold_df</span>.<span class="fn">nlargest</span>(<span class="num">10</span>, <span class="str">"Gem_Score"</span>)[[
+    <span class="str">"Player_Name"</span>, <span class="str">"Role"</span>, <span class="str">"T20_Batting_Avg"</span>,
+    <span class="str">"T20_Strike_Rate"</span>, <span class="str">"Sold_Price_Cr"</span>, <span class="str">"Winning_Team"</span>
+]]</pre></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>Built with <strong>Python · Pandas · NumPy</strong> &nbsp;|&nbsp; IPL 2026 Mega Auction Data Analysis Project</p>
+  <p style="margin-top:0.5rem;font-size:0.72rem">Dataset: 244 players · 18 features · 10 franchises &nbsp;·&nbsp; All figures synthetic for portfolio purposes</p>
+</footer>
+
+<script>
+  function switchTab(btn, tabId) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  }
+
+  // Animate bars on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('.bar-fill').forEach(bar => {
+          const target = bar.style.width;
+          bar.style.width = '0';
+          setTimeout(() => { bar.style.width = target; }, 100);
+        });
+      }
+    });
+  }, { threshold: 0.2 });
+
+  document.querySelectorAll('.bar-chart').forEach(chart => observer.observe(chart));
+</script>
+</body>
+</html>
